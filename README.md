@@ -44,6 +44,7 @@ Quelle est l'unique citation d'Albert Einstein sur la musique à travers ce form
 
 [Photo du résultat](/music/music.png)
 ​
+
 Combien de temps vous faudra-t-il plus ou moins pour scraper tout le contenu du ce site web ? https://quotes.toscrape.com/random
 
 ​[Voici le code avec Python ](/temps/temps.py)
