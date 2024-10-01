@@ -4,10 +4,13 @@ En tant que développeur en Intelligence Artificielle, le professionnel doit con
 Quel le nombre de livres et le prix moyen qu'on retrouve dans chacune des catégories de ce site web ? https://books.toscrape.com/index.html
 
 [Voici le code avec Python ](catégorie.py)
+
 [Photo du résultat ](prix-moyen.png)
 
 Quel est le nombre de page qu'on retrouve sur ce site web ? https://quotes.toscrape.com/
+
 [Voici le code avec Python ](nbre-page.py)
+
 [Photo du résultat](nbre-page.png)
 ​
 
