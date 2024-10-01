@@ -1,86 +1,118 @@
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
 
-# URL du site principal
-base_url = 'http://books.toscrape.com/'
+# URL de base pour accéder aux catégories de livres
+base_url = "https://books.toscrape.com/catalogue/category/books/"
 
-# Fonction pour scraper une catégorie avec gestion de la pagination
-def scrape_category(category_url):
-    total_books = 0
-    total_price = 0.0
-    current_page_number = 1
+# Liste complète des catégories à scraper
+categories = [
+    "travel_2",
+    "mystery_3",
+    "historical-fiction_4",
+    "sequential-art_5",
+    "classics_6",
+    "philosophy_7",
+    "romance_8",
+    "womens-fiction_9",
+    "fiction_10",
+    "childrens_11",
+    "religion_12",
+    "nonfiction_13",
+    "music_14",
+    "default_15",
+    "science-fiction_16",
+    "sports-and-games_17",
+    "fantasy_19",
+    "new-adult_20",
+    "young-adult_21",
+    "science_22",
+    "poetry_23",
+    "paranormal_24",
+    "art_25",
+    "psychology_26",
+    "autobiography_27",
+    "parenting_28",
+    "adult-fiction_29",
+    "humor_30",
+    "horror_31",
+    "history_32",
+    "food-and-drink_33",
+    "christian-fiction_34",
+    "business_35",
+    "biography_36",
+    "thriller_37",
+    "contemporary_38",
+    "spirituality_39",
+    "academic_40",
+    "self-help_41",
+    "historical_42",
+    "christian_43",
+    "suspense_44",
+    "short-stories_45",
+    "novels_46",
+    "health_47",
+    "politics_48",
+    "cultural_49",
+    "erotica_50",
+    "crime_51"
+]
+
+# Dictionnaire pour stocker les résultats
+results = {}
+
+# Parcourir chaque catégorie
+for category in categories:
+    # Construire l'URL pour chaque catégorie
+    url = base_url + category + "/index.html"
     
-    while True:
-        # Construire l'URL de la page actuelle
-        current_page_url = f"{category_url}/page-{current_page_number}.html"
-        response = requests.get(current_page_url)
-        
-        # Vérifier si la requête est réussie
-        if response.status_code != 200:
-            break  # Si la page n'existe pas, sortir de la boucle
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
+    # Faire une requête pour obtenir le contenu de la page
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, "html.parser")
+    
+    # Trouver le nombre total de livres dans la catégorie
+    num_books_text = soup.find("form", class_="form-horizontal").find("strong").text
+    num_books = int(num_books_text)  # Convertir le texte en entier
 
-        # Trouver tous les livres sur la page
-        books = soup.find_all('article', class_='product_pod')
+    # Liste pour stocker les prix des livres
+    prices = []
 
-        # Si aucun livre n'est trouvé, sortir de la boucle
-        if not books:
-            break
+    # Trouver tous les livres sur la première page
+    for book in soup.find_all("article", class_="product_pod"):
+        # Récupérer le prix de chaque livre
+        price_text = book.find("p", class_="price_color").text[1:]  # Enlever le symbole £
+        prices.append(float(price_text))  # Ajouter le prix à la liste
 
-        # Parcourir chaque livre pour extraire le prix
-        for book in books:
-            # Trouver le prix dans l'élément 'p' avec la classe 'price_color'
-            price = book.find('p', class_='price_color').text
-            # Convertir le prix en flottant en enlevant le signe de la livre (£)
-            price = float(price.replace('£', ''))
+    # Vérifier si une page suivante existe et la parcourir si nécessaire
+    next_button = soup.find("li", class_="next")
+    while next_button:
+        # Construire l'URL de la page suivante
+        next_page_url = next_button.find("a")["href"]
+        url = base_url + category + "/" + next_page_url
 
-            # Ajouter le prix au total
-            total_price += price
-            # Incrémenter le compteur de livres
-            total_books += 1
+        # Faire une requête pour obtenir le contenu de la page suivante
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, "html.parser")
 
-        # Passer à la page suivante
-        current_page_number += 1
+        # Trouver tous les livres sur la nouvelle page
+        for book in soup.find_all("article", class_="product_pod"):
+            price_text = book.find("p", class_="price_color").text[1:]  # Enlever le symbole £
+            prices.append(float(price_text))  # Ajouter le prix à la liste
 
-    # Retourner le nombre total de livres et le prix moyen
-    if total_books > 0:
-        average_price = total_price / total_books
-    else:
-        average_price = 0
+        # Vérifier si une autre page suivante existe
+        next_button = soup.find("li", class_="next")
 
-    return total_books, average_price
+    # Calculer le prix moyen
+    avg_price = sum(prices) / len(prices) if prices else 0
 
-# Faire une requête pour obtenir la page d'accueil
-response = requests.get(base_url)
+    # Stocker les résultats dans le dictionnaire
+    results[category] = {
+        "number_of_books": num_books,
+        "average_price": avg_price
+    }
 
-# Vérifier si la requête est réussie
-if response.status_code == 200:
-    # Parser la page d'accueil
-    soup = BeautifulSoup(response.content, 'html.parser')
-
-    # Trouver la section des catégories
-    categories_section = soup.find('ul', class_='nav nav-list')
-
-    # Extraire toutes les catégories
-    categories = categories_section.find_all('a')
-
-    # Parcourir chaque catégorie (sauf la première qui est "Books")
-    for category in categories[1:]:
-        # Nom de la catégorie
-        category_name = category.text.strip()
-        # URL de la catégorie
-        category_url = urljoin(base_url, category['href']).replace('/index.html', '')
-
-        # Scraper la catégorie
-        total_books, average_price = scrape_category(category_url)
-
-        # Afficher les résultats pour la catégorie
-        print(f"Catégorie : {category_name}")
-        print(f"Nombre de livres : {total_books}")
-        print(f"Prix moyen : £{average_price:.2f}")
-        print('-' * 40)
-
-else:
-    print("Échec de la requête, statut :", response.status_code)
+# Afficher les résultats
+for category, data in results.items():
+    print(f"Category: {category.replace('_', ' ').title()}")
+    print(f"Number of books: {data['number_of_books']}")
+    print(f"Average price: £{data['average_price']:.2f}")
+    print("-" * 40)
