@@ -2,36 +2,42 @@ import requests
 from bs4 import BeautifulSoup
 from collections import Counter
 
-# URL de la page à scrapper
+# URL de la page à scraper
 url = 'https://quotes.toscrape.com/tableful/'
 
-# Effectuer une requête GET pour récupérer le contenu de la page
+# Faire la requête HTTP pour obtenir le contenu de la page
 response = requests.get(url)
 
 # Vérifier si la requête a réussi
 if response.status_code == 200:
-    soup = BeautifulSoup(response.content, 'html.parser')
-    
-    # Trouver la section contenant les tags
-    tags_section = soup.find('td', rowspan='5')
-    
-    if tags_section:
-        # Trouver tous les tags dans cette section
-        tags = tags_section.find_all('a')
-    
-        # Extraire le texte de chaque tag et les compter
-        tag_list = [tag.text for tag in tags]
-        tag_counts = Counter(tag_list)
+    # Parser le contenu HTML avec BeautifulSoup
+    soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Trouver le tag le plus répétitif
-        most_common_tag = tag_counts.most_common(1)
+    # Trouver tous les <td> contenant les tags
+    tags_td = soup.find_all('td', style='padding-bottom: 2em;')
 
-        # Afficher le tag le plus fréquent sans le nombre d'occurrences
-        if most_common_tag:
-            print(f"Le tag le plus répétitif est '{most_common_tag[0][0]}'.")
-        else:
-            print("Aucun tag trouvé.")
-    else:
-        print("Aucune section de tags trouvée.")
+    # Extraire tous les tags et les stocker dans une liste
+    all_tags = []
+    for td in tags_td:
+        a_tags = td.find_all('a')
+        for a in a_tags:
+            all_tags.append(a.text.strip())  # Utiliser strip() pour nettoyer l'espace
+
+    # Compter la fréquence des tags
+    tag_counts = Counter(all_tags)
+
+    # Trouver le tag le plus répétitif
+    most_common_tag = tag_counts.most_common(1)
+
+    # Afficher le tag le plus fréquent
+    if most_common_tag:
+        print(f"Le tag le plus répétitif est : '{most_common_tag[0][0]}' avec {most_common_tag[0][1]} occurrences.")
+
+    # Afficher tous les tags pour chaque citation
+    print("\nTags pour chaque citation :")
+    for td in tags_td:
+        tags = [a.text.strip() for a in td.find_all('a')]
+        print(tags)
+
 else:
-    print(f"Erreur lors de la récupération de la page : {response.status_code}")
+    print(f"Erreur lors de la requête : {response.status_code}")
