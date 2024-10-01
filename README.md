@@ -12,6 +12,7 @@ Quel est le nombre de page qu'on retrouve sur ce site web ? https://quotes.toscr
 [Voici le code avec Python ](nbre-page.py)
 
 [Photo du résultat](nbre-page.png)
+
 ​
 Quel le nombre de citations qu'on retrouve sur cet URL ? https://quotes.toscrape.com/scroll
 ​
