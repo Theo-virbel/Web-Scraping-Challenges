@@ -38,7 +38,9 @@ Quel est le tag le plus répétitif sur cette page ? https://quotes.toscrape.com
 
 Quelle est l'unique citation d'Albert Einstein sur la musique à travers ce formulaire ? https://quotes.toscrape.com/search.aspx
 
+​[Voici le code avec Python ](music.py)
 
+[Photo du résultat](music.png)
 ​
 Combien de temps vous faudra-t-il plus ou moins pour scraper tout le contenu du ce site web ? https://quotes.toscrape.com/random
 
